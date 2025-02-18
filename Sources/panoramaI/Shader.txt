@@ -1,0 +1,71 @@
+// Adapted from https://www.shadertoy.com/view/ls2cz3
+#include <metal_stdlib>
+using namespace metal;
+
+#define PI 3.14159265358979323846264
+#define PI_2 1.5707963267948966
+
+struct Inputs {
+    float aspectRatio;
+    float psi;
+    float theta;
+    float2 f;
+    float rotation;
+    float2 panOffset;
+};
+
+struct VertexIn {
+    float4 position [[attribute(0)]];
+    float2 texCoord [[attribute(1)]];
+};
+
+struct VertexOutput {
+    float4 position [[position]];
+    float2 texCoord;
+};
+
+
+float2 calcSphericalCoordsInGnomonicProjection(float2 screenCoord, constant Inputs &inputs ) {
+
+    float2 cp = (inputs.panOffset * 2.0 - 1.0) * float2(PI, PI_2);
+    float2 convertedScreenCoord = (screenCoord * 2.0 - 1.0) * inputs.f * float2(PI, PI_2);
+    float x = convertedScreenCoord.x * inputs.aspectRatio , y = convertedScreenCoord.y;
+    
+    float rou = sqrt(x * x + y * y);
+    float c = atan(rou);
+    float sin_c = sin(c), cos_c = cos(c);
+    
+    float scale = (inputs.theta *  inputs.f.y);
+    float lat = asin(cos_c * sin(cp.y - scale) + (y * sin_c * cos(cp.y - scale)) / rou) ;
+    float lon = cp.x + atan2(x * sin_c, rou * cos(cp.y - scale) * cos_c - y * sin(cp.y - scale) * sin_c) + inputs.psi * inputs.f.x;
+
+    lon = fmod(lon + PI, PI * 2.0);
+    if (lon < 0.0) lon += PI * 2.0;
+    lon -= PI;
+
+    
+    return float2((lon / PI + 1.0) * 0.5, (lat / PI_2 + 1.0) * 0.5);
+}
+
+vertex VertexOutput vertexShader(const VertexIn vertex_in [[ stage_in ]])
+{
+    VertexOutput out;
+    out.position = vertex_in.position;
+    out.texCoord = vertex_in.texCoord;
+
+    return out;
+}
+
+
+fragment float4 fragmentShader(VertexOutput in [[stage_in]],
+                               texture2d<float> textureMap [[texture(0)]],
+                               sampler textureSampler [[sampler(0)]],
+                               constant Inputs &inputs [[ buffer(1) ]])
+{
+    float2 dir = calcSphericalCoordsInGnomonicProjection(in.texCoord, inputs);
+    
+    // Sample the texture using the calculated coordinates
+    float3 color = textureMap.sample(textureSampler, dir).rgb;
+    
+    return float4(color, 1.0);
+}
