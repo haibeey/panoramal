@@ -41,7 +41,6 @@ struct PanoramaView: UIViewRepresentable {
     public init(name: String,ext : String, config: Config) {
         self.config = config
         let util  = Utils()
-        print("\(util.readShader()) hello ")
         do {
             let device = MTLCreateSystemDefaultDevice()!
             let url = Bundle.main.url(forResource: name, withExtension: ext)!
