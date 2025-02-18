@@ -37,9 +37,11 @@ struct ContentView: View {
 ```
 
 
-### 
-
+## Quick demo
+### Paris
 ![paris](assets/demo.gif)
+###
+World view
 ![world view](assets/demo2.gif)
 
  
