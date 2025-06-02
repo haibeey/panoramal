@@ -66,6 +66,20 @@ class Utils{
         task.resume()
     }
     
+    func getImageURL( name: String, folder_path: String) -> URL? {
+        let fileManager = FileManager.default
+        guard let documentsURL = fileManager.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return nil
+        }
+        let folderURL = documentsURL.appendingPathComponent(folder_path)
+        let fileURL = folderURL.appendingPathComponent(name)
+        if fileManager.fileExists(atPath: fileURL.path) {
+            return fileURL
+        } else {
+            return nil
+        }
+    }
+    
     
     
     func readShader() -> String? {

@@ -18,21 +18,30 @@ struct PanoramaView: UIViewRepresentable {
     
     private static func createPlaceholderTexture() -> MTLTexture {
         let device = MTLCreateSystemDefaultDevice()!
+        
         let textureDescriptor = MTLTextureDescriptor.texture2DDescriptor(
             pixelFormat: .rgba8Unorm,
-            width: 1,
-            height: 1,
+            width: 2,
+            height: 2,
             mipmapped: false
         )
         textureDescriptor.usage = [.shaderRead, .shaderWrite]
+        
         let placeholderTexture = device.makeTexture(descriptor: textureDescriptor)!
         
-        let color: [UInt8] = [255, 255, 255, 255]
+
+        let pixels: [UInt8] = [
+            200, 200, 200, 255,
+            50,  50,  50,  255,
+            50,  50,  50,  255,
+            200, 200, 200, 255
+        ]
+        
         placeholderTexture.replace(
-            region: MTLRegionMake2D(0, 0, 1, 1),
+            region: MTLRegionMake2D(0, 0, 2, 2),
             mipmapLevel: 0,
-            withBytes: color,
-            bytesPerRow: 4
+            withBytes: pixels,
+            bytesPerRow: 2 * 4
         )
         
         return placeholderTexture
@@ -40,7 +49,6 @@ struct PanoramaView: UIViewRepresentable {
     
     public init(name: String,ext : String, config: Config) {
         self.config = config
-        let util  = Utils()
         do {
             let device = MTLCreateSystemDefaultDevice()!
             let url = Bundle.main.url(forResource: name, withExtension: ext)!
@@ -69,6 +77,25 @@ struct PanoramaView: UIViewRepresentable {
             let options : [MTKTextureLoader.Option: Any] = [.SRGB: false, .generateMipmaps: true]
             texture = try textureLoader.newTexture(URL: localFilePath, options: options)
             
+            
+        } catch {
+            texture = PanoramaView.createPlaceholderTexture()
+            print("Failed to load texture: \(error.localizedDescription)")
+        }
+    }
+    
+    public init(file_name: String, folder_path: String,config: Config) {
+        self.config = config
+        do {
+            let util  = Utils()
+            if let url = util.getImageURL(name: file_name, folder_path: folder_path){
+                let device = MTLCreateSystemDefaultDevice()!
+                let textureLoader = MTKTextureLoader(device: device)
+                let options : [MTKTextureLoader.Option: Any] = [.SRGB: false, .generateMipmaps: true]
+                texture = try textureLoader.newTexture(URL: url.absoluteURL, options: options)
+            }else{
+                texture = PanoramaView.createPlaceholderTexture()
+            }
             
         } catch {
             texture = PanoramaView.createPlaceholderTexture()

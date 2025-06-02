@@ -23,7 +23,7 @@ public struct PanoramaI: View {
     
     @State private var lastTouch: Bool = false
     
-    public init(urlPath: String? = nil, name: String? = nil, ext: String? = nil) {
+    public init(urlPath: String? = nil, name: String? = nil, ext: String? = nil, folder_path: String? = nil) {
         let configInstance = Config(containerHeight: Float(UIScreen.main.bounds.height),
                                     containerWidth: Float(UIScreen.main.bounds.width))
         self._config = ObservedObject(wrappedValue: configInstance)
@@ -32,7 +32,9 @@ public struct PanoramaI: View {
             panoView = PanoramaView(urlPath: urlPath, config: configInstance)
         } else if let name = name, let ext = ext {
             panoView = PanoramaView(name: name, ext: ext, config: configInstance)
-        } else {
+        }else if let name = name, let folder_path = folder_path{
+            panoView = PanoramaView(file_name: name, folder_path: folder_path, config: configInstance)
+        }else {
             fatalError("Must provide either panorama URL or name/ext of file in the app resource group")
         }
     }
