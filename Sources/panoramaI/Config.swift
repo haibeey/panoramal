@@ -9,18 +9,19 @@ import Foundation
 import simd
 
 
-class Config : ObservableObject{
+public class Config : ObservableObject{
     @Published var panOffset: SIMD2<Float>
     @Published var psi: Float = 0
     @Published var theta: Float = 0
     @Published var rotation: Float = 0
     @Published var containerHeight : Float
     @Published var containerWidth : Float
+    @Published var horizontalFieldView : Float = 75.0;
     
     let minTheta : Float = -90.0
     let maxTheta : Float = 90.0
     
-    let hotizontalFieldView : Float = 75.0;
+    
     
     init(containerHeight :Float,containerWidth : Float) {
         self.containerWidth = containerWidth
@@ -42,5 +43,16 @@ class Config : ObservableObject{
         }
     }
     
-    
+    public func  updateHorizontalFieldView(hfov : Float){
+        DispatchQueue.main.async {
+            if(hfov < 30){
+                self.horizontalFieldView = 30
+            }else if(hfov > 90){
+                self.horizontalFieldView = 90
+            }else{
+                self.horizontalFieldView = hfov
+            }
+            
+        }
+    }
 }

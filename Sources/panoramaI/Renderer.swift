@@ -46,7 +46,7 @@ public class Renderer: NSObject, MTKViewDelegate {
     
     init(_ parent: PanoramaView,texture : MTLTexture) {
         let aspectRatio : Float = parent.config.containerWidth / parent.config.containerHeight
-        let hfov : Float = parent.config.hotizontalFieldView * ( .pi / 180 )
+        let hfov : Float = parent.config.horizontalFieldView * ( .pi / 180 )
         let vfov = 2 * atan(tan(hfov * 0.5) / aspectRatio)
         let focal = 1 / tan(vfov * 0.5)
         inputs = Inputs(
@@ -119,6 +119,11 @@ public class Renderer: NSObject, MTKViewDelegate {
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
     public func draw(in view: MTKView) {
         
+        let aspectRatio : Float = parent.config.containerWidth / parent.config.containerHeight
+        let hfov : Float = parent.config.horizontalFieldView * ( .pi / 180 )
+        let vfov = 2 * atan(tan(hfov * 0.5) / aspectRatio)
+        let focal = 1 / tan(vfov * 0.5)
+        inputs.f = SIMD2<Float>(focal,focal)
         inputs.theta =  parent.config.theta * (.pi / 180)
         inputs.psi = parent.config.psi * (.pi / 180)
         
