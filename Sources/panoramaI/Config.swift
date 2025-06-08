@@ -23,10 +23,11 @@ public class Config : ObservableObject{
     
     
     
-    public init(containerHeight :Float,containerWidth : Float) {
+    public init(containerHeight :Float,containerWidth : Float,hfov : Float = 65.0) {
         self.containerWidth = containerWidth
         self.containerHeight = containerHeight
         self.panOffset = SIMD2<Float>(1,1)
+        self.horizontalFieldView = hfov
     }
     
     func updatePanOffset(x: Float,y: Float){
