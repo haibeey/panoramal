@@ -16,14 +16,14 @@ public class Config : ObservableObject{
     @Published var rotation: Float = 0
     @Published var containerHeight : Float
     @Published var containerWidth : Float
-    @Published var horizontalFieldView : Float = 50.0;
+    @Published var horizontalFieldView : Float = 65.0;
     
     let minTheta : Float = -90.0
     let maxTheta : Float = 90.0
     
     
     
-    init(containerHeight :Float,containerWidth : Float) {
+    public init(containerHeight :Float,containerWidth : Float) {
         self.containerWidth = containerWidth
         self.containerHeight = containerHeight
         self.panOffset = SIMD2<Float>(1,1)
