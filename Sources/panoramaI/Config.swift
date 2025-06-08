@@ -16,7 +16,7 @@ public class Config : ObservableObject{
     @Published var rotation: Float = 0
     @Published var containerHeight : Float
     @Published var containerWidth : Float
-    @Published var horizontalFieldView : Float = 75.0;
+    @Published var horizontalFieldView : Float = 50.0;
     
     let minTheta : Float = -90.0
     let maxTheta : Float = 90.0
