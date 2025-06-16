@@ -27,6 +27,7 @@ public struct PanoramaI: View {
     @State private var lastZoom: CGFloat = 1.0
     
     public init(urlPath: String? = nil,
+                url: URL? = nil,
                 name: String? = nil,
                 ext: String? = nil,
                 folder_path: String? = nil,
@@ -42,7 +43,9 @@ public struct PanoramaI: View {
         
         if let urlPath = urlPath {
             panoView = PanoramaView(urlPath: urlPath, config: configInstance!)
-        } else if let name = name, let ext = ext {
+        }else if let url = url {
+            panoView = PanoramaView(url: url, config: configInstance!)
+        }else if let name = name, let ext = ext {
             panoView = PanoramaView(name: name, ext: ext, config: configInstance!)
         }else if let name = name, let folder_path = folder_path{
             panoView = PanoramaView(file_name: name, folder_path: folder_path, config: configInstance!)

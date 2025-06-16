@@ -64,6 +64,22 @@ struct PanoramaView: UIViewRepresentable {
         
     }
     
+    public init(url: URL, config: Config) {
+        self.config = config
+        do {
+            let device = MTLCreateSystemDefaultDevice()!
+            let options : [MTKTextureLoader.Option: Any] = [.SRGB: false, .generateMipmaps: true]
+            let textureLoader = MTKTextureLoader(device: device)
+            texture = try textureLoader.newTexture(URL: url, options: options)
+            
+
+        } catch {
+            texture = PanoramaView.createPlaceholderTexture()
+            print("Failed to load texture: \(error.localizedDescription)")
+        }
+        
+    }
+    
     public init(urlPath: String, config: Config) {
         self.config = config
         do {
