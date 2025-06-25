@@ -12,7 +12,6 @@ import Foundation
 
 public struct PanoramaI: View {
     
-    private let panoView: PanoramaView
     @ObservedObject private var config: Config
     
     @State private var onPointerDownPsi: Float = 0
@@ -26,6 +25,12 @@ public struct PanoramaI: View {
     @State private var zoom: CGFloat = 1.0
     @State private var lastZoom: CGFloat = 1.0
     
+    var urlPath: String?
+    var url: URL?
+    var name: String?
+    var ext: String?
+    var folder_path: String?
+    
     public init(urlPath: String? = nil,
                 url: URL? = nil,
                 name: String? = nil,
@@ -36,84 +41,104 @@ public struct PanoramaI: View {
         var configInstance  = the_config
         if (the_config == nil){
             configInstance = Config(containerHeight: Float(UIScreen.main.bounds.height),
-                                        containerWidth: Float(UIScreen.main.bounds.width))
+                                    containerWidth: Float(UIScreen.main.bounds.width))
         }
-
+        
         self._config = ObservedObject(wrappedValue: configInstance!)
         
-        if let urlPath = urlPath {
-            panoView = PanoramaView(urlPath: urlPath, config: configInstance!)
-        }else if let url = url {
-            panoView = PanoramaView(url: url, config: configInstance!)
-        }else if let name = name, let ext = ext {
-            panoView = PanoramaView(name: name, ext: ext, config: configInstance!)
-        }else if let name = name, let folder_path = folder_path{
-            panoView = PanoramaView(file_name: name, folder_path: folder_path, config: configInstance!)
-        }else {
-            fatalError("Must provide either panorama URL or name/ext of file in the app resource group")
-        }
+        self.urlPath = urlPath
+        self.url = url
+        self.name = name
+        self.ext = ext
+        self.folder_path = folder_path
+        
     }
     
     
     public var body: some View {
-        panoView
-            .gesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { value in
-                        
-                        if(!lastTouch){
-                            lastTouch = true
+        
+        
+        Group {
+            if config.isPlaceHolderTexture {
+                Text("Invalid panorama file.")
+                    .font(.title)
+                    .fontWeight(.bold)
+                    .foregroundColor(.red)
+            } else {
+                Group {
+                    if let urlPath = self.urlPath {
+                        PanoramaView(urlPath: urlPath, config: self.config)
+                    } else if let url = self.url {
+                        PanoramaView(url: url, config: self.config)
+                    } else if let name = self.name, let ext = self.ext {
+                        PanoramaView(name: name, ext: ext, config: self.config)
+                    } else if let name = self.name, let folder_path = self.folder_path {
+                        PanoramaView(file_name: name, folder_path: folder_path, config: self.config)
+                    } else {
+                        Text("Invalid panorama file.")
+                            .font(.title)
+                            .fontWeight(.bold)
+                            .foregroundColor(.red)
+                    }
+                }.gesture(
+                    DragGesture(minimumDistance: 0)
+                        .onChanged { value in
+                            
+                            if(!lastTouch){
+                                lastTouch = true
+                                onPointerDownPointerX = Float(value.location.x)
+                                onPointerDownPointerY = Float(value.location.y)
+                                
+                                onPointerDownPsi = self.config.psi
+                                onPointerDownTheta = self.config.theta
+                                return
+                            }
+                            
+                            let x : Float = Float(value.location.x)
+                            let y : Float = Float(value.location.y)
+                            
+                            let width = self.config.containerWidth
+                            let height = self.config.containerHeight
+                            
+                            let  psi =
+                            ((atan(onPointerDownPointerX / width * 2.0 - 1.0) - atan(x / width * 2.0 - 1.0)) * 180 / .pi * 100.0 / 90.0 ) + onPointerDownPsi
+                            
+                            
+                            let vfov = 2 * atan(tan(30.0 / 360 * .pi) * height / width) * 180.0 / .pi
+                            
+                            let  theta =
+                            ((atan(y / height * 2.0 - 1.0) - atan(onPointerDownPointerY / height * 2.0 - 1.0)) * 180.0 / .pi * vfov / 90) + onPointerDownTheta
+                            
+                            
+                            // rotation is constant for now as we assume panning with your hands.
+                            config.updateAngles(psi: psi, theta: theta, rotation: 0)
+                            
+                        }
+                        .onEnded { value in
+                            
                             onPointerDownPointerX = Float(value.location.x)
                             onPointerDownPointerY = Float(value.location.y)
                             
                             onPointerDownPsi = self.config.psi
                             onPointerDownTheta = self.config.theta
-                            return
+                            
+                            lastTouch = false
                         }
-                        
-                        let x : Float = Float(value.location.x)
-                        let y : Float = Float(value.location.y)
-                        
-                        let width = self.config.containerWidth
-                        let height = self.config.containerHeight
-                        
-                        let  psi =
-                        ((atan(onPointerDownPointerX / width * 2.0 - 1.0) - atan(x / width * 2.0 - 1.0)) * 180 / .pi * 100.0 / 90.0 ) + onPointerDownPsi
-                        
-                        
-                        let vfov = 2 * atan(tan(30.0 / 360 * .pi) * height / width) * 180.0 / .pi
-                        
-                        let  theta =
-                        ((atan(y / height * 2.0 - 1.0) - atan(onPointerDownPointerY / height * 2.0 - 1.0)) * 180.0 / .pi * vfov / 90) + onPointerDownTheta
-                        
-                        
-                        // rotation is constant for now as we assume panning with your hands.
-                        config.updateAngles(psi: psi, theta: theta, rotation: 0)
-                        
-                    }
-                    .onEnded { value in
-                        
-                        onPointerDownPointerX = Float(value.location.x)
-                        onPointerDownPointerY = Float(value.location.y)
-                        
-                        onPointerDownPsi = self.config.psi
-                        onPointerDownTheta = self.config.theta
-                        
-                        lastTouch = false
-                    }
-            ).simultaneousGesture(
-                MagnificationGesture()
-                    .onChanged { value in
-                        let delta = value / lastZoom
-                        zoom *= delta
-                        lastZoom = value
-
-                        let clampedZoom = min(max(zoom, 0.5), 3.0)
-                        config.updateHorizontalFieldView(hfov: Float(clampedZoom) * config.horizontalFieldView)
-                    }
-                    .onEnded { _ in
-                        lastZoom = 1.0
-                    }
-            )
+                ).simultaneousGesture(
+                    MagnificationGesture()
+                        .onChanged { value in
+                            let delta = value / lastZoom
+                            zoom *= delta
+                            lastZoom = value
+                            
+                            let clampedZoom = min(max(zoom, 0.5), 3.0)
+                            config.updateHorizontalFieldView(hfov: Float(clampedZoom) * config.horizontalFieldView)
+                        }
+                        .onEnded { _ in
+                            lastZoom = 1.0
+                        }
+                )
+            }
+        }
     }
 }

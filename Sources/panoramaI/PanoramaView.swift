@@ -59,7 +59,7 @@ struct PanoramaView: UIViewRepresentable {
 
         } catch {
             texture = PanoramaView.createPlaceholderTexture()
-            print("Failed to load texture: \(error.localizedDescription)")
+            config.updateIsPlaceHolderTexture(ipht: true)
         }
         
     }
@@ -75,7 +75,7 @@ struct PanoramaView: UIViewRepresentable {
 
         } catch {
             texture = PanoramaView.createPlaceholderTexture()
-            print("Failed to load texture: \(error.localizedDescription)")
+            config.updateIsPlaceHolderTexture(ipht: true)
         }
         
     }
@@ -96,7 +96,7 @@ struct PanoramaView: UIViewRepresentable {
             
         } catch {
             texture = PanoramaView.createPlaceholderTexture()
-            print("Failed to load texture: \(error.localizedDescription)")
+            config.updateIsPlaceHolderTexture(ipht: true)
         }
     }
     
@@ -111,11 +111,12 @@ struct PanoramaView: UIViewRepresentable {
                 texture = try textureLoader.newTexture(URL: url.absoluteURL, options: options)
             }else{
                 texture = PanoramaView.createPlaceholderTexture()
+                config.updateIsPlaceHolderTexture(ipht: true)
             }
             
         } catch {
             texture = PanoramaView.createPlaceholderTexture()
-            print("Failed to load texture: \(error.localizedDescription)")
+            config.updateIsPlaceHolderTexture(ipht: true)
         }
     }
     

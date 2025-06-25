@@ -18,6 +18,8 @@ public class Config : ObservableObject{
     @Published var containerWidth : Float
     @Published var horizontalFieldView : Float = 65.0;
     
+    @Published var isPlaceHolderTexture  = false
+    
     let minTheta : Float = -90.0
     let maxTheta : Float = 90.0
     
@@ -54,6 +56,12 @@ public class Config : ObservableObject{
                 self.horizontalFieldView = hfov
             }
             
+        }
+    }
+    
+    func updateIsPlaceHolderTexture(ipht: Bool){
+        DispatchQueue.main.async {
+            self.isPlaceHolderTexture = ipht
         }
     }
 }
