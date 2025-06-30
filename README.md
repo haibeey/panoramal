@@ -13,7 +13,7 @@ struct ContentView: View {
         
     var body: some View {
         VStack{
-            PanoramaI(name: "merged", ext: "jpg")
+            PanoramaI(source: .namedFile(name:"merged", ext:"jpg"))
         }
     }
 }
@@ -29,7 +29,7 @@ struct ContentView: View {
         
     var body: some View {
         VStack{
-            PanoramaI(urlPath: "https://url.com/360image.jpeg")
+             PanoramaI(source: .urlPath("https://url.com/360image.jpeg"))
         }
     }
 }
