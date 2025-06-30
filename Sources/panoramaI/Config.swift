@@ -17,20 +17,32 @@ public class Config : ObservableObject{
     @Published var containerHeight : Float
     @Published var containerWidth : Float
     @Published var horizontalFieldView : Float = 65.0;
-    
+    @Published var dragSensitivity : Float = 1.0
     @Published var isPlaceHolderTexture  = false
     
     let minTheta : Float = -90.0
     let maxTheta : Float = 90.0
-    let dragSensitivity : Float = 1.1
     
     
-    
-    public init(containerHeight :Float,containerWidth : Float,hfov : Float = 65.0) {
+    public init(containerHeight :Float,
+                containerWidth : Float,
+                hfov : Float = 65.0,
+                dragSensitivity : Float = 1.05,
+                psi : Float = 0.0,
+                rotation : Float = 0.0,
+                theta : Float = 0.0,
+                panOffset : SIMD2<Float> = SIMD2<Float>(1,1),
+                isPlaceHolderTexture : Bool = false
+    ) {
         self.containerWidth = containerWidth
         self.containerHeight = containerHeight
-        self.panOffset = SIMD2<Float>(1,1)
+        self.panOffset = panOffset
         self.horizontalFieldView = hfov
+        self.psi = psi
+        self.theta = theta
+        self.rotation = rotation
+        self.dragSensitivity = dragSensitivity
+        self.isPlaceHolderTexture = isPlaceHolderTexture
     }
     
     func updatePanOffset(x: Float,y: Float){
@@ -52,7 +64,7 @@ public class Config : ObservableObject{
             if(hfov < 30){
                 self.horizontalFieldView = 30
             }else if(hfov > 90){
-                self.horizontalFieldView = 90
+                self.horizontalFieldView = 80
             }else{
                 self.horizontalFieldView = hfov
             }
