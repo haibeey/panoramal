@@ -23,7 +23,6 @@ public struct PanoramaI: View {
     @ObservedObject private var config: Config
     private let source: Source
     
-    private let dragSensitivity: Float = 2.0
     
     public init(
         source: Source,
@@ -102,8 +101,8 @@ public struct PanoramaI: View {
             vFOV: verticalFOV(containerWidth: wF, containerHeight: hF)
         )
         
-        let psiDelta   = basePsiDelta   * dragSensitivity
-        let thetaDelta = baseThetaDelta * dragSensitivity
+        let psiDelta   = basePsiDelta   * config.dragSensitivity
+        let thetaDelta = baseThetaDelta * config.dragSensitivity
         
         config.updateAngles(
             psi:     config.psi   - psiDelta,

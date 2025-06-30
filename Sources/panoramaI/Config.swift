@@ -22,6 +22,7 @@ public class Config : ObservableObject{
     
     let minTheta : Float = -90.0
     let maxTheta : Float = 90.0
+    let dragSensitivity : Float = 1.1
     
     
     
