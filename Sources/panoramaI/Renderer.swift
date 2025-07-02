@@ -118,43 +118,44 @@ public class Renderer: NSObject, MTKViewDelegate {
     }
     public func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {}
     public func draw(in view: MTKView) {
+        autoreleasepool {
+       
+            let aspectRatio = parent.config.containerWidth / parent.config.containerHeight
+            let hfov = parent.config.horizontalFieldView * (.pi / 180)
+            let vfov = 2 * atan(tan(hfov * 0.5) / aspectRatio)
+            let focal = 1 / tan(vfov * 0.5)
+            inputs.f = SIMD2<Float>(focal, focal)
+            inputs.theta = parent.config.theta * (.pi / 180)
+            inputs.psi = parent.config.psi * (.pi / 180)
+
         
-        let aspectRatio : Float = parent.config.containerWidth / parent.config.containerHeight
-        let hfov : Float = parent.config.horizontalFieldView * ( .pi / 180 )
-        let vfov = 2 * atan(tan(hfov * 0.5) / aspectRatio)
-        let focal = 1 / tan(vfov * 0.5)
-        inputs.f = SIMD2<Float>(focal,focal)
-        inputs.theta =  parent.config.theta * (.pi / 180)
-        inputs.psi = parent.config.psi * (.pi / 180)
-        
-        guard let drawable = view.currentDrawable else {
-            return
+            memcpy(fragmentBuffer.contents(), &inputs, MemoryLayout<Inputs>.stride)
+
+            guard let drawable = view.currentDrawable,
+                  let rpd = view.currentRenderPassDescriptor else { return }
+
+            let cmdBuf = commandQueue.makeCommandBuffer()!
+            rpd.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 1)
+            let encoder = cmdBuf.makeRenderCommandEncoder(descriptor: rpd)!
+
+            encoder.setRenderPipelineState(pipelineState)
+            encoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
+            encoder.setFragmentTexture(texture, index: 0)
+            encoder.setFragmentSamplerState(sampler, index: 0)
+            encoder.setFragmentBuffer(fragmentBuffer, offset: 0, index: 1)
+
+            encoder.drawIndexedPrimitives(type: .triangle,
+                                          indexCount: indices.count,
+                                          indexType: .uint16,
+                                          indexBuffer: indexBuffer,
+                                          indexBufferOffset: 0)
+            encoder.endEncoding()
+
+
+            cmdBuf.present(drawable)
+            cmdBuf.commit()
         }
-        
-        let commandBuffer = commandQueue.makeCommandBuffer()!
-        
-        let renderPassDescriptor = view.currentRenderPassDescriptor!
-        renderPassDescriptor.colorAttachments[0].clearColor = MTLClearColorMake(0, 0, 0, 1.0)
-        renderPassDescriptor.colorAttachments[0].loadAction = .clear
-        renderPassDescriptor.colorAttachments[0].storeAction = .store
-        
-        let renderEncoder = commandBuffer
-            .makeRenderCommandEncoder(descriptor: renderPassDescriptor)!
-        
-        renderEncoder.setRenderPipelineState(pipelineState)
-        renderEncoder.setFragmentTexture(texture, index: 0)
-        renderEncoder.setFragmentSamplerState(sampler, index: 0)
-        renderEncoder.setVertexBuffer(vertexBuffer, offset: 0, index: 0)
-        renderEncoder.setFragmentBytes(&inputs, length: MemoryLayout<Inputs>.stride, index: 1)
-        renderEncoder.drawIndexedPrimitives(type: .triangle,
-                                            indexCount: indices.count,
-                                            indexType: .uint16,
-                                            indexBuffer: indexBuffer,
-                                            indexBufferOffset: 0)
-        renderEncoder.endEncoding()
-        
-        commandBuffer.present(drawable)
-        commandBuffer.commit()
     }
+
 }
 
